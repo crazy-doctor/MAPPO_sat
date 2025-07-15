@@ -30,8 +30,6 @@ class ContinuousActorNetwork(nn.Module):
         dist = Beta(alpha, beta)
         return dist
 
-
-
 class ContinuousCriticNetwork(nn.Module):
     def __init__(self, input_dims, args,
                  hidden_dims=512):
@@ -52,4 +50,3 @@ class ContinuousCriticNetwork(nn.Module):
         x = T.tanh(self.fc3(x))
         v = self.v(x)
         return v
-

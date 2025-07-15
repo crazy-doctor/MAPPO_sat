@@ -62,7 +62,7 @@ def run():
             # 达到terminal有两种情况，第一种是所有智能体死亡，或智能体胜利，第二种是达到
             # 任务时间，强行任务终止
             # 全局任务终止条件，使用dw判断和使用时间判断
-            terminal = list(env.done_judge.RedIsDone.values())[0]
+            terminal = list(blue_done.values())[0]
             mask = 0.0 if terminal else 1.0
             # 存储数据
             # mappo_red.store_memory(red_obs, global_obs_red, action_red,
@@ -93,8 +93,6 @@ def run():
         print(f"episode:{episode} {this_ep_reward_sum_blue} time:{time.time()-start_time}")
         episode += 1
         # print(torch.cuda.memory_summary())
-
-
 
 
 if __name__ == '__main__':
