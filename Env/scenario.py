@@ -112,10 +112,11 @@ class scenario(Tool):
 
         delta_v_dict = self.convert_v(action_copy)
 
-        self.done_judge.update_dict(inf=self.sim.inf, assign_res=self.assign_res)
+        # done是指这一时刻是否死掉，而obs的观测是下一时刻是否死亡，目前obs是使用上一时刻的
+        # self.done_judge.update_dict(inf=self.sim.inf, assign_res=self.assign_res)
 
         red_dead_win = {red_id: bool(self.done_judge.RedIsDw[red_id]) for red_id in self.red_sat}
-        blue_dead_wim = {blue_id: bool(self.done_judge.BlueIsDw[blue_id]) for blue_id in self.blue_sat}
+        blue_dead_win = {blue_id: bool(self.done_judge.BlueIsDw[blue_id]) for blue_id in self.blue_sat}
 
         red_done = copy.deepcopy(self.done_judge.RedIsDone)
         blue_done = copy.deepcopy(self.done_judge.BlueIsDone)
@@ -124,6 +125,8 @@ class scenario(Tool):
         blue_reward = self.rod.blue_reward(assign_res=self.assign_res, inf=self.sim.inf,done_judge=self.done_judge,action=delta_v_dict)
 
         self.sim.Step_Env(delta_v_dict=delta_v_dict) #抽象接口的输入单位为km/s
+
+        self.done_judge.update_dict(inf=self.sim.inf, assign_res=self.assign_res)
 
 
         # 任务分配
@@ -144,7 +147,7 @@ class scenario(Tool):
 
         return red_obs, blue_obs,\
                red_reward, blue_reward,\
-               red_dead_win, blue_dead_wim, \
+               red_dead_win, blue_dead_win, \
                red_done, blue_done,\
                global_obs_red, global_obs_blue
 

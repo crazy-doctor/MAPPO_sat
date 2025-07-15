@@ -39,8 +39,8 @@ class sc_info(Tool):
 
     def init_state(self):
         self.time = 0
-        # self.random_init(self.args.orbit_alt) # todo:初始化卫星初始状态,初始化时，确保卫星不会小于安全距离死亡
-        self.debug_init()
+        self.random_init(self.args.orbit_alt) # todo:初始化卫星初始状态,初始化时，确保卫星不会小于安全距离死亡
+        # self.debug_init()
 
     def random_init(self, orbit_alt):
         ref_sat_ele = np.array([np.random.uniform(0, 3), np.random.uniform(0, 300), orbit_alt, 0,
@@ -48,7 +48,8 @@ class sc_info(Tool):
         r = np.random.uniform(200, 220)
 
         theta = 2 * math.asin(r / (42157 * 2)) * 180 / math.pi
-        single = random.choice([-1, 1])
+        # single = random.choice([-1, 1])
+        single = 1
         red_ref_ele = ref_sat_ele + single*np.array([0,0,0,0,theta,0])
         blue_ref_pos, blue_ref_vel = Tool.orbital_elements_to_pv(self, ref_sat_ele)  # 给蓝方设置一个参考点，三颗卫星以这个参考点为基准
         # red_ref_pos, red_ref_vel = Tool.orbital_elements_to_pv(self, red_ref_ele)
@@ -63,7 +64,7 @@ class sc_info(Tool):
             elif sat_id[0] == "b":
                 dis = 5*int(sat_id[1])
                 theta = 2 * math.asin(dis / (42157 * 2)) * 180 / math.pi
-                ele_tmp = ref_sat_ele + single * np.array([0, 0, 0, 0, theta*int(sat_id[1]), 0])
+                ele_tmp = ref_sat_ele + single * np.array([0, 0, 0, 0, theta, 0])
                 self.orbital_ele[sat_id] = ele_tmp
                 self.pos[sat_id], self.vel[sat_id] = Tool.orbital_elements_to_pv(self, self.orbital_ele[sat_id])
                 self.pos_cw[sat_id], self.vel_cw[sat_id] = Tool.Inertial_to_CW(self, blue_ref_pos, blue_ref_vel,
@@ -72,7 +73,7 @@ class sc_info(Tool):
             elif sat_id[0] == "r":  # 红方卫星
                 dis = 5*int(sat_id[1])
                 theta = 2 * math.asin(dis / (42157 * 2)) * 180 / math.pi
-                ele_tmp = red_ref_ele + single * np.array([0, 0, 0, 0, theta*int(sat_id[1]), 0])
+                ele_tmp = red_ref_ele + single * np.array([0, 0, 0, 0, theta, 0])
                 self.orbital_ele[sat_id] = ele_tmp
                 self.pos[sat_id], self.vel[sat_id] = Tool.orbital_elements_to_pv(self, self.orbital_ele[sat_id])
                 self.pos_cw[sat_id], self.vel_cw[sat_id] = Tool.Inertial_to_CW(self, blue_ref_pos, blue_ref_vel,

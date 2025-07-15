@@ -2,6 +2,8 @@ import copy
 
 from Env.information import sc_info as inf
 
+import numpy as np
+
 class done_judge:
     def __init__(self, red_sat, blue_sat, args):
         self.red_sat = red_sat
@@ -32,6 +34,14 @@ class done_judge:
         self.BlueIsDone = {blue_id: False for blue_id in self.blue_sat}
 
     def update_dict(self, inf, assign_res):
+        # martix = np.zeros(3)
+        # martix[0] = inf.dis_sat("b0","b1")
+        # martix[1] = inf.dis_sat("b0", "b2")
+        # martix[2] = inf.dis_sat("b1", "b2")
+        # min_dis = np.min(martix)
+        # max_dis = np.max(martix)
+        # if min_dis<self.args.safe_dis or max_dis>self.args.comm_dis:
+        #     a = 0
         self.RedIsDie = {red_id: False for red_id in self.red_sat}  # 一步量，只反应当前时刻状态
         self.RedSuccess = {red_id: False for red_id in self.red_sat}  # 一步量，只反应当前时刻状态
         self.BlueIsDie = {blue_id: False for blue_id in self.blue_sat}  # 一步量，只反应当前时刻状态
