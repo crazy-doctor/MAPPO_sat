@@ -32,7 +32,7 @@ class ContinuousActorNetwork(nn.Module):
 
 class ContinuousCriticNetwork(nn.Module):
     def __init__(self, input_dims, args,
-                 hidden_dims=512):
+                 hidden_dims=256):
         super(ContinuousCriticNetwork, self).__init__()
 
         self.fc1 = nn.Linear(input_dims, hidden_dims)

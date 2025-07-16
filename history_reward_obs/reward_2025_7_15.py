@@ -69,12 +69,17 @@ class reward_obs_done(Tool):
         return False
 
     def GlobalObs_Blue(self,inf, done_judge, every_obs:dict):
-        global_obs = np.zeros(0)
 
+        time = np.array([inf.time / self.args.episode_length], dtype=float)
+
+        ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7), axis=0)
+
+        other_info = np.zeros(0)
         for blue_id in self.blue_sat:
-            global_obs = np.concatenate((global_obs,every_obs[blue_id]),axis=0)
+            tmp_info = np.concatenate((inf.pos_cw[blue_id] / 1000, inf.vel_cw[blue_id] * 10), axis=0)
+            other_info = np.concatenate((other_info, tmp_info), axis=0)
 
-        return global_obs
+        return np.concatenate((time, ref_info, other_info),axis=0)
 
     def single_blue_obs(self, red_name, blue_name, inf, done_judge):
 
@@ -159,4 +164,4 @@ class reward_obs_done(Tool):
 
     def observation_space(self):
         return {"red":35, "global_red":49,
-                "blue": 25, "global_blue":75}
+                "blue": 25, "global_blue":25}
