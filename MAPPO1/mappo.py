@@ -23,7 +23,7 @@ class MAPPO:
         self.memory.store_memory(observation, state, action, prob, reward, observation_, state_, mask)
 
 
-    def choose_action(self, raw_obs, evalute=False):
+    def choose_action(self, raw_obs, evalute=True):
         debug = False
         actions = {}
         probs = {}

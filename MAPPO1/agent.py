@@ -29,7 +29,7 @@ class Agent:
 
                 alpha, beta = self.actor.get_alpha_beta(state)
 
-                action = (alpha - 1) / (alpha + beta - 2)
+                action = alpha / (alpha + beta)
                 dist = Beta(alpha, beta)
 
                 # 计算众数处的概率密度值
