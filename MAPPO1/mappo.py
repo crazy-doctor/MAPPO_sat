@@ -1,6 +1,8 @@
 from agent import Agent
 from memory import PPOMemory
 import numpy as np
+import os
+import torch
 
 
 class MAPPO:
@@ -23,7 +25,7 @@ class MAPPO:
         self.memory.store_memory(observation, state, action, prob, reward, observation_, state_, mask)
 
 
-    def choose_action(self, raw_obs, evalute=True):
+    def choose_action(self, raw_obs, evalute=False):
         debug = False
         actions = {}
         probs = {}
@@ -49,3 +51,37 @@ class MAPPO:
 
     def clear_memory(self):
         self.memory.clear_memory()
+
+    def save(self, episode, dir):
+        result_num_dir = os.path.join(dir, f'{episode}th_episode')
+        if not os.path.exists(result_num_dir):
+            os.makedirs(result_num_dir)
+
+        torch.save(
+            {agent.agent_name: agent.actor.state_dict() for agent in self.agents},  # actor parameter
+            os.path.join(result_num_dir, f'ep_{episode}_actor.pt')
+        )
+
+        torch.save(
+            {agent.agent_name: agent.critic.state_dict() for agent in self.agents},  # actor parameter
+            os.path.join(result_num_dir, f'ep_{episode}_critic.pt')
+        )
+
+    @classmethod
+    # dir : 文件所在的文件夹的上一级，存储着不同episode的信息
+    # def __init__(self, dim_info, capacity, batch_size, actor_lr, critic_lr, res_dir, args):
+    def load(cls, dim_info, args, agents_name, load_dir, episode_num):
+        instance = cls(dim_info, args, agents_name)
+        load_dir = os.path.join(load_dir, f'{episode_num}th_episode')
+        file_actor = f'ep_{episode_num}_actor.pt'
+        file_critic = f'ep_{episode_num}_critic.pt'
+        # 加载actor
+        data_actor = torch.load(load_dir+ "\\"+ file_actor)
+        for agent in instance.agents:
+            agent.actor.load_state_dict(data_actor[agent.agent_name])
+        # 加载critic
+        data_critic = torch.load(load_dir+ "\\"+ file_critic)
+        for agent in instance.agents:
+            agent.critic.load_state_dict(data_critic[agent.agent_name])
+
+        return instance

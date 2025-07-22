@@ -21,7 +21,7 @@ def get_args():
     # 仿真参数
     parser.add_argument('--max_step', type=int, default=2400000)
     parser.add_argument('--learn_interval', type=int, default=5)
-    parser.add_argument('--save_episode', type=int, default=4000)
+    parser.add_argument('--save_episode', type=int, default=2)
     parser.add_argument('--buffer_capacity', type=int, default=1024)
     parser.add_argument('--a_optim_batch_size', type=int, default=128)
     parser.add_argument('--c_optim_batch_size', type=int, default=128)

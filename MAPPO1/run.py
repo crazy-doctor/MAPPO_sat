@@ -11,12 +11,12 @@ from Tool import File_Path
 
 def run():
 
+    LOAD = False
+    LOAD_RUN_TIME = 1
+    LOAD_EP = 5
+
     args = parameter.get_args()
     env, dim_info_red, dim_info_blue = get_reset_env(evaluate=False, args=args)
-
-    # mappo_red = MAPPO(dim_info=dim_info_red, args=args, agents_name=env.red_sat)
-    mappo_blue = MAPPO(dim_info=dim_info_blue, args=args, agents_name=env.blue_sat)
-
     # 所有工程存储结果的地方
     file_result = args.result_save_path
     # 工程文件夹名称（文件夹代表不同的方法）
@@ -26,6 +26,17 @@ def run():
     if not os.path.exists(result_path):
         os.makedirs(result_path)
     file_o = File_Path.file_operate(root_path=result_path)
+
+    if LOAD:
+        # maddpg_red = MAPPO.load(dim_info=dim_info_red,args=args,agents_name=env.red_sat,
+        #                          load_dir=file_o.get_episode_path_load(run_th=LOAD_RUN_TIME, side="RED"),
+        #                          episode_num=LOAD_EP)
+        mappo_blue = MAPPO.load(dim_info=dim_info_blue,args=args,agents_name=env.blue_sat,
+                                 load_dir=file_o.get_episode_path_load(run_th=LOAD_RUN_TIME, side="BLUE"),
+                                 episode_num=LOAD_EP)
+    else:
+        # mappo_red = MAPPO(dim_info=dim_info_red, args=args, agents_name=env.red_sat)
+        mappo_blue = MAPPO(dim_info=dim_info_blue, args=args, agents_name=env.blue_sat)
 
     writer_blue = {agent_id: SummaryWriter(os.path.join(str(file_o.tensor_draw_path_blue), agent_id)) for agent_id in
                   env.blue_sat}
@@ -83,11 +94,19 @@ def run():
                 mappo_blue.clear_memory()
 
                 traj_length = 0
+
+
             red_obs, blue_obs = red_obs_next, blue_obs_next
             global_obs_red, global_obs_blue = global_obs_red_next, global_obs_blue_next
 
         for agent_id, r in this_ep_reward_sum_blue.items():  # record reward
             writer_blue[agent_id].add_scalar("reward_agent", r, episode + 1)
+        # 保存模型
+        if episode % args.save_episode == 0:
+            # 保存replay buffer以及actor,以及critic
+            print("各参数已经保存")
+            # maddpg_red.save(reward=episode_rewards_red, episode=episode + 1, dir=file_o.RED)  # save model
+            mappo_blue.save(episode=episode + 1, dir=file_o.BLUE)
 
         print(f"episode:{episode} {this_ep_reward_sum_blue} time:{time.time()-start_time}")
         episode += 1
