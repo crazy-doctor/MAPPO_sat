@@ -1,6 +1,7 @@
 import numpy as np
 import torch as T
 from networks import ContinuousActorNetwork, ContinuousCriticNetwork
+from torch.distributions import Beta, Categorical
 
 
 class Agent:
@@ -20,15 +21,31 @@ class Agent:
         self.n_actions = n_actions
 
 
-    def choose_action(self, observation):
-        with T.no_grad():
-            state = T.tensor(observation, dtype=T.float,
-                             device=self.actor.device)
+    def choose_action(self, observation, evalute):
+        if evalute:
+            with T.no_grad():
+                state = T.tensor(observation, dtype=T.float,
+                                 device=self.actor.device)
 
-            dist = self.actor(state)
-            action = dist.sample()
-            probs = dist.log_prob(action)
-        return action.cpu().numpy(), probs.cpu().numpy()
+                alpha, beta = self.actor.get_alpha_beta(state)
+
+                action = (alpha - 1) / (alpha + beta - 2)
+                dist = Beta(alpha, beta)
+
+                # 计算众数处的概率密度值
+                probs = dist.log_prob(action)
+            return action.cpu().numpy(), probs.cpu().numpy()
+        else:
+            with T.no_grad():
+                state = T.tensor(observation, dtype=T.float,
+                                 device=self.actor.device)
+
+                dist = self.actor.get_dist(state)
+                action = dist.sample()
+                probs = dist.log_prob(action)
+            return action.cpu().numpy(), probs.cpu().numpy()
+
+
 
     def calc_adv_and_returns(self, memories):
         states, new_states, r, dones = memories
@@ -70,7 +87,7 @@ class Agent:
                 old_probs = old_probs_arr[batch]
                 actions = action_arr[batch]
                 actor_states = actor_states_arr[batch]
-                dist = self.actor(actor_states)
+                dist = self.actor.get_dist(actor_states)
                 new_probs = dist.log_prob(actions)
                 prob_ratio = T.exp(new_probs.sum(1, keepdims=True) - old_probs.
                                    sum(1, keepdims=True))

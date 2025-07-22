@@ -27,8 +27,17 @@ class ContinuousActorNetwork(nn.Module):
         x = T.tanh(self.fc3(x))
         alpha = F.relu(self.alpha(x)) + 1.0
         beta = F.relu(self.beta(x)) + 1.0
+
+        return alpha, beta
+
+    def get_dist(self, state):
+        alpha, beta = self.forward(state)
         dist = Beta(alpha, beta)
         return dist
+
+    # 提供直接获取alpha beta的外部接口
+    def get_alpha_beta(self,state):
+        return self.forward(state)
 
 class ContinuousCriticNetwork(nn.Module):
     def __init__(self, input_dims, args,

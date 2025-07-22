@@ -46,7 +46,7 @@ def run():
             action_red, prob_red = \
                 {a_id: np.zeros(3)+0.5 for a_id in env.red_sat}, \
                     {a_id: np.zeros(3) for a_id in env.red_sat}
-            action_blue, prob_blue = mappo_blue.choose_action(blue_obs, env.done_judge.BlueIsDw)
+            action_blue, prob_blue = mappo_blue.choose_action(blue_obs)
             act = {**action_red, **action_blue}
 
             red_obs_next, blue_obs_next, \
@@ -81,7 +81,6 @@ def run():
 
                 # mappo_red.clear_memory()
                 mappo_blue.clear_memory()
-                # torch.cuda.empty_cache()
 
                 traj_length = 0
             red_obs, blue_obs = red_obs_next, blue_obs_next
@@ -92,7 +91,6 @@ def run():
 
         print(f"episode:{episode} {this_ep_reward_sum_blue} time:{time.time()-start_time}")
         episode += 1
-        # print(torch.cuda.memory_summary())
 
 
 if __name__ == '__main__':

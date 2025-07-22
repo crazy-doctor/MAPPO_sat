@@ -23,13 +23,13 @@ class MAPPO:
         self.memory.store_memory(observation, state, action, prob, reward, observation_, state_, mask)
 
 
-    def choose_action(self, raw_obs, DW):
+    def choose_action(self, raw_obs, evalute=False):
         debug = False
         actions = {}
         probs = {}
         for agent_id, agent in zip(raw_obs, self.agents):
             if not debug:
-                action, prob = agent.choose_action(raw_obs[agent_id])
+                action, prob = agent.choose_action(raw_obs[agent_id],evalute=evalute)
                 # action, prob = self.action_mask(action, prob, DW[agent_id])
             else:
                 action = np.zeros(3)+0.5

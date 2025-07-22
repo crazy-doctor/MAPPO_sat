@@ -19,7 +19,7 @@ def get_args():
     parser.add_argument('--fast_calculate', type=bool, default=True)
     parser.add_argument("--orbit_alt", type=int, default=42157)
     # 仿真参数
-    parser.add_argument('--max_step', type=int, default=1200000)
+    parser.add_argument('--max_step', type=int, default=2400000)
     parser.add_argument('--learn_interval', type=int, default=5)
     parser.add_argument('--save_episode', type=int, default=4000)
     parser.add_argument('--buffer_capacity', type=int, default=1024)
@@ -31,7 +31,7 @@ def get_args():
     parser.add_argument('--lambd', type=float, default=0.95)
     parser.add_argument('--eps_clip', type=float, default=0.2)
     parser.add_argument('--actor_lr', type=float, default=0.0003)
-    parser.add_argument('--critic_lr', type=float, default=0.0001)
+    parser.add_argument('--critic_lr', type=float, default=0.0003)
     parser.add_argument('--device', type=str, default='cuda:0')
     parser.add_argument('--entropy_coef', type=float, default=1e-3, help='Entropy coefficient of Actor')
     parser.add_argument('--entropy_coef_decay', type=float, default=0.99, help='Decay rate of entropy_coef')
