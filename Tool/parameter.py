@@ -18,17 +18,20 @@ def get_args():
     parser.add_argument('--visual_flag', type=bool, default=False)
     parser.add_argument('--fast_calculate', type=bool, default=True)
     parser.add_argument("--orbit_alt", type=int, default=42157)
+
+    parser.add_argument("--evalute", type=bool, default=False)
+
     # 仿真参数
     parser.add_argument('--max_step', type=int, default=2400000)
     parser.add_argument('--learn_interval', type=int, default=5)
-    parser.add_argument('--save_episode', type=int, default=2)
+    parser.add_argument('--save_episode', type=int, default=3000)
     parser.add_argument('--buffer_capacity', type=int, default=1024)
     parser.add_argument('--a_optim_batch_size', type=int, default=128)
     parser.add_argument('--c_optim_batch_size', type=int, default=128)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--n_epochs', type=int, default=10)
-    parser.add_argument('--gamma', type=float, default=0.95)
-    parser.add_argument('--lambd', type=float, default=0.95)
+    parser.add_argument('--gamma', type=float, default=0.99)
+    parser.add_argument('--lambd', type=float, default=0.99)
     parser.add_argument('--eps_clip', type=float, default=0.2)
     parser.add_argument('--actor_lr', type=float, default=0.0003)
     parser.add_argument('--critic_lr', type=float, default=0.0003)

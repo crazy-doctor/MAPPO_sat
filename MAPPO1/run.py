@@ -8,6 +8,7 @@ import torch
 from Tool.init import get_reset_env
 from Tool import parameter
 from Tool import File_Path
+from evaluate import evalute
 
 def run():
 
@@ -26,6 +27,7 @@ def run():
     if not os.path.exists(result_path):
         os.makedirs(result_path)
     file_o = File_Path.file_operate(root_path=result_path)
+    writer_blue = SummaryWriter(file_o.run_path)
 
     if LOAD:
         # maddpg_red = MAPPO.load(dim_info=dim_info_red,args=args,agents_name=env.red_sat,
@@ -38,12 +40,13 @@ def run():
         # mappo_red = MAPPO(dim_info=dim_info_red, args=args, agents_name=env.red_sat)
         mappo_blue = MAPPO(dim_info=dim_info_blue, args=args, agents_name=env.blue_sat)
 
-    writer_blue = {agent_id: SummaryWriter(os.path.join(str(file_o.tensor_draw_path_blue), agent_id)) for agent_id in
-                  env.blue_sat}
+    # writer_blue = {agent_id: SummaryWriter(os.path.join(str(file_o.tensor_draw_path_blue), agent_id)) for agent_id in
+    #               env.blue_sat}
 
     episode = 1
     traj_length = 0
     total_steps = 0
+    evalute_episode = 100
 
     while total_steps < args.max_step:
         red_obs, blue_obs, global_obs_red, global_obs_blue = env.reset()
@@ -99,8 +102,8 @@ def run():
             red_obs, blue_obs = red_obs_next, blue_obs_next
             global_obs_red, global_obs_blue = global_obs_red_next, global_obs_blue_next
 
-        for agent_id, r in this_ep_reward_sum_blue.items():  # record reward
-            writer_blue[agent_id].add_scalar("reward_agent", r, episode + 1)
+        # for agent_id, r in this_ep_reward_sum_blue.items():  # record reward
+        #     writer_blue[agent_id].add_scalar("reward_agent", r, episode + 1)
         # 保存模型
         if episode % args.save_episode == 0:
             # 保存replay buffer以及actor,以及critic
@@ -109,6 +112,8 @@ def run():
             mappo_blue.save(episode=episode + 1, dir=file_o.BLUE)
 
         print(f"episode:{episode} {this_ep_reward_sum_blue} time:{time.time()-start_time}")
+        if episode % evalute_episode == 0:
+            evalute(args, env, mappo_blue, writer_blue, episode/evalute_episode)
         episode += 1
 
 

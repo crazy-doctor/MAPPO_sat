@@ -99,7 +99,7 @@ class reward_obs_done(Tool):
             if blue_id!=blue_name:
                 dis_array.append(inf.dis_sat(blue_name, blue_id))
         min_dis = min(dis_array)
-        max_dis = min(dis_array)
+        max_dis = max(dis_array)
         if min_dis<self.args.safe_dis or max_dis>self.args.comm_dis:
             return -1
         else:
@@ -108,8 +108,8 @@ class reward_obs_done(Tool):
 
     def single_blue_done(self, red_name, blue_name, inf):
         # 如果被追上，判定死亡
-        if np.linalg.norm(inf.pos[red_name]-inf.pos[blue_name])<self.args.done_distance:
-            return True
+        # if np.linalg.norm(inf.pos[red_name]-inf.pos[blue_name])<self.args.done_distance:
+        #     return True
         if inf.time==self.args.episode_length-1:
             return True
         return False
