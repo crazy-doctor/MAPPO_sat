@@ -70,10 +70,8 @@ class reward_obs_done(Tool):
 
     def GlobalObs_Blue(self,inf, done_judge, every_obs:dict):
         global_obs = np.zeros(0)
-
         for blue_id in self.blue_sat:
             global_obs = np.concatenate((global_obs,every_obs[blue_id]),axis=0)
-
         return global_obs
 
     def single_blue_obs(self, red_name, blue_name, inf, done_judge):

@@ -4,11 +4,11 @@ from torch.utils.tensorboard import SummaryWriter
 import os
 
 from Tool import File_Path
-def evalute(args, env, mappo_blue, writer_blue,evalute_times):
+def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_times):
 
     print("=============================================================")
     print(f"第{int(evalute_times)}次评估开始")
-    Evalute_ep = 5 # 评估一次需要几轮
+    Evalute_ep = 10 # 评估一次需要几轮
     episode = 1
     traj_length = 0
     total_steps = 0
@@ -21,18 +21,19 @@ def evalute(args, env, mappo_blue, writer_blue,evalute_times):
     if not os.path.exists(result_path):
         os.makedirs(result_path)
 
+    ##################指标#########################
+    min_distance_list = {sat_name:[] for sat_name in env.red_sat} #红方指标，用于计算平均最短距离
+    die_times = {sat_name:0 for sat_name in env.red_sat+env.blue_sat} #红蓝双方卫星死亡次数
+    ##############################################
+
     while episode <= Evalute_ep:
         red_obs, blue_obs, global_obs_red, global_obs_blue = env.reset()
         terminal = False
-        unregularTimes = 0
-
+        min_dis_ep = {sat_name:env.sim.inf.dis_sat(sat_name,"b"+sat_name[1]) for sat_name in env.red_sat}
+        is_die_ep = {sat_name:False for sat_name in env.red_sat+env.blue_sat}
         while not terminal:
             total_steps += 1
-            # action_red, prob_red = mappo_red.choose_action(red_obs, debug=False)
-
-            action_red, prob_red = \
-                {a_id: np.zeros(3)+0.5 for a_id in env.red_sat}, \
-                    {a_id: np.zeros(3) for a_id in env.red_sat}
+            action_red, prob_red = mappo_red.choose_action(red_obs, evalute=True)
             action_blue, prob_blue = mappo_blue.choose_action(blue_obs,evalute=True)
             act = {**action_red, **action_blue}
 
@@ -42,6 +43,22 @@ def evalute(args, env, mappo_blue, writer_blue,evalute_times):
             red_done, blue_done, \
             global_obs_red_next, global_obs_blue_next \
             = env.step(act)
+
+            # 维护min_dis_ep
+            for red_name in env.red_sat:
+                dis_now = env.sim.inf.dis_sat(red_name,"b"+red_name[1])
+                min_dis_ep[red_name] = min(dis_now, min_dis_ep[red_name])
+                dis_array = []
+                for red_id in env.red_sat:
+                    if red_name != red_id:
+                        dis_array.append(env.sim.inf.dis_sat(red_name, red_id))
+
+                min_dis = min(dis_array)
+                max_dis = max(dis_array)
+                if min_dis < args.safe_dis or max_dis > args.comm_dis:
+                    is_die_ep[red_name] = True
+                    break
+
             for blue_name in env.blue_sat:
                 dis_array = []
                 for blue_id in env.blue_sat:
@@ -50,7 +67,7 @@ def evalute(args, env, mappo_blue, writer_blue,evalute_times):
                 min_dis = min(dis_array)
                 max_dis = max(dis_array)
                 if min_dis < args.safe_dis or max_dis > args.comm_dis:
-                    unregularTimes+=1
+                    is_die_ep[blue_name] = True
                     break
 
             traj_length += 1
@@ -59,11 +76,33 @@ def evalute(args, env, mappo_blue, writer_blue,evalute_times):
             # 任务时间，强行任务终止
             # 全局任务终止条件，使用dw判断和使用时间判断
             terminal = list(blue_done.values())[0]
+            if terminal: break
             red_obs, blue_obs = red_obs_next, blue_obs_next
 
-        writer_blue.add_scalar("unregularTimes", unregularTimes, (evalute_times-1)*Evalute_ep + episode)
-        print(f"第{episode}轮不合格步数为: {unregularTimes}")
+        # 处理一局运行的结果
+        for red_id in env.red_sat:
+            min_distance_list[red_id].append(min_dis_ep[red_id])
+            if is_die_ep[red_id]: die_times[red_id] += 1
+
+        for blue_id in env.blue_sat:
+            if is_die_ep[blue_id]: die_times[blue_id] += 1
 
         episode += 1
-    print("评估结束")
+
+    for red_id in env.red_sat:
+        writer_red[red_id].add_scalars('result_eva',
+                                       {'die_times': die_times[red_id],
+                                        'avr_min_dis': sum(min_distance_list[red_id])/len(min_distance_list[red_id])
+                                       },
+                                        evalute_times)
+
+    for blue_id in env.blue_sat:
+        writer_blue[blue_id].add_scalars('result_eva',
+                                       {'die_times': die_times[blue_id]},
+                                        evalute_times)
+
+    avr_dis = {red_id:sum(min_distance_list[red_id])/len(min_distance_list[red_id]) for red_id in env.red_sat}
+    print("评估结果:")
+    print(f"红方最小距离: {avr_dis}")
+    print(f"死亡次数: {die_times}")
     print("=============================================================")

@@ -10,6 +10,10 @@ from Tool import parameter
 from Tool import File_Path
 from evaluate import evalute
 
+# 1.将之前的环境接入到MAPPO1中
+# 2.编写evaluate进行测试
+# 3.监控训练过程中的loss变化
+
 def run():
 
     LOAD = False
@@ -27,26 +31,27 @@ def run():
     if not os.path.exists(result_path):
         os.makedirs(result_path)
     file_o = File_Path.file_operate(root_path=result_path)
-    writer_blue = SummaryWriter(file_o.run_path)
 
     if LOAD:
-        # maddpg_red = MAPPO.load(dim_info=dim_info_red,args=args,agents_name=env.red_sat,
-        #                          load_dir=file_o.get_episode_path_load(run_th=LOAD_RUN_TIME, side="RED"),
-        #                          episode_num=LOAD_EP)
+        mappo_red = MAPPO.load(dim_info=dim_info_red,args=args,agents_name=env.red_sat,
+                                 load_dir=file_o.get_episode_path_load(run_th=LOAD_RUN_TIME, side="RED"),
+                                 episode_num=LOAD_EP)
         mappo_blue = MAPPO.load(dim_info=dim_info_blue,args=args,agents_name=env.blue_sat,
                                  load_dir=file_o.get_episode_path_load(run_th=LOAD_RUN_TIME, side="BLUE"),
                                  episode_num=LOAD_EP)
     else:
-        # mappo_red = MAPPO(dim_info=dim_info_red, args=args, agents_name=env.red_sat)
+        mappo_red = MAPPO(dim_info=dim_info_red, args=args, agents_name=env.red_sat)
         mappo_blue = MAPPO(dim_info=dim_info_blue, args=args, agents_name=env.blue_sat)
 
-    # writer_blue = {agent_id: SummaryWriter(os.path.join(str(file_o.tensor_draw_path_blue), agent_id)) for agent_id in
-    #               env.blue_sat}
+    writer_red = {agent_id: SummaryWriter(os.path.join(str(file_o.tensor_draw_path_red), agent_id)) for agent_id in
+                  env.red_sat}
+    writer_blue = {agent_id: SummaryWriter(os.path.join(str(file_o.tensor_draw_path_blue), agent_id)) for agent_id in
+                  env.blue_sat}
 
     episode = 1
     traj_length = 0
     total_steps = 0
-    evalute_episode = 100
+    evalute_episode = 10
 
     while total_steps < args.max_step:
         red_obs, blue_obs, global_obs_red, global_obs_blue = env.reset()
@@ -55,11 +60,7 @@ def run():
         start_time = time.time()
         while not terminal:
             total_steps += 1
-            # action_red, prob_red = mappo_red.choose_action(red_obs, debug=False)
-
-            action_red, prob_red = \
-                {a_id: np.zeros(3)+0.5 for a_id in env.red_sat}, \
-                    {a_id: np.zeros(3) for a_id in env.red_sat}
+            action_red, prob_red = mappo_red.choose_action(red_obs)
             action_blue, prob_blue = mappo_blue.choose_action(blue_obs)
             act = {**action_red, **action_blue}
 
@@ -79,9 +80,9 @@ def run():
             terminal = list(blue_done.values())[0]
             mask = 0.0 if terminal else 1.0
             # 存储数据
-            # mappo_red.store_memory(red_obs, global_obs_red, action_red,
-            #                     prob_red, red_reward,
-            #                     red_obs_next, global_obs_red_next, mask)
+            mappo_red.store_memory(red_obs, global_obs_red, action_red,
+                                prob_red, red_reward,
+                                red_obs_next, global_obs_red_next, mask)
 
             mappo_blue.store_memory(blue_obs, global_obs_blue, action_blue,
                                 prob_blue, blue_reward,
@@ -90,10 +91,10 @@ def run():
                 this_ep_reward_sum_blue[agent_id] += r
 
             if traj_length % args.buffer_capacity == 0:
-                # mappo_red.learn()
+                mappo_red.learn()
                 mappo_blue.learn()
 
-                # mappo_red.clear_memory()
+                mappo_red.clear_memory()
                 mappo_blue.clear_memory()
 
                 traj_length = 0
@@ -108,12 +109,12 @@ def run():
         if episode % args.save_episode == 0:
             # 保存replay buffer以及actor,以及critic
             print("各参数已经保存")
-            # maddpg_red.save(reward=episode_rewards_red, episode=episode + 1, dir=file_o.RED)  # save model
+            mappo_red.save(episode=episode + 1, dir=file_o.RED)  # save model
             mappo_blue.save(episode=episode + 1, dir=file_o.BLUE)
 
         print(f"episode:{episode} {this_ep_reward_sum_blue} time:{time.time()-start_time}")
         if episode % evalute_episode == 0:
-            evalute(args, env, mappo_blue, writer_blue, episode/evalute_episode)
+            evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue, episode/evalute_episode)
         episode += 1
 
 

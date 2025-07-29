@@ -10,33 +10,11 @@ class reward_obs_done(Tool):
         self.red_sat = red_sat
         self.blue_sat = blue_sat
 
-    def GlobalObs_Red(self,inf, done_judge, assign_res):
-        time = np.array([inf.time / self.args.episode_length], dtype=float)
-        ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7), axis=0)
-        zero_p_v = np.zeros(6)
-
-        red_info = np.zeros(0)
+    def GlobalObs_Red(self,inf, done_judge, every_obs:dict):
+        global_obs = np.zeros(0)
         for red_id in self.red_sat:
-            if done_judge.RedIsDw[red_id]==2:
-                tmp_info = np.concatenate((np.array([float(done_judge.RedIsDw[red_id])]), zero_p_v), axis=0)
-            else:
-                tmp_info = np.concatenate((
-                np.array([done_judge.RedIsDw[red_id]], dtype=float),
-                inf.pos_cw[red_id] / 1000, inf.vel_cw[red_id] * 10),axis=0)
-            red_info = np.concatenate((red_info, tmp_info), axis=0)
-
-        blue_info = np.zeros(0)
-        for red_id in self.red_sat:
-            target_blue_id = assign_res[red_id]
-            if done_judge.BlueIsDw[target_blue_id]==2:
-                tmp_info = np.concatenate((np.array([float(done_judge.BlueIsDw[target_blue_id])]), zero_p_v), axis=0)
-            else:
-                tmp_info = np.concatenate((
-                np.array([done_judge.BlueIsDw[target_blue_id]], dtype=float),
-                inf.pos_cw[target_blue_id] / 1000, inf.vel_cw[target_blue_id] * 10),axis=0)
-            blue_info = np.concatenate((blue_info, tmp_info), axis=0)
-
-        return np.concatenate((time, ref_info, red_info, blue_info), axis=0)
+            global_obs = np.concatenate((global_obs,every_obs[red_id]),axis=0)
+        return global_obs
     def single_red_obs(self, red_name, blue_name, inf, done_judge):
         time = np.array([inf.time/self.args.episode_length],dtype=float)
         ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7),axis=0)
@@ -83,8 +61,8 @@ class reward_obs_done(Tool):
 
         if done_judge.BlueIsDw[blue_name]!=0 :return 0
         # 引导奖励
-        dis = self.dis_ocursion(red_name, blue_name,act, inf, 2)
-        dis_ = self.dis_ocursion(red_name, blue_name,np.zeros(3), inf, 2)
+        dis_ = self.dis_ocursion(red_name, blue_name,act, inf, 2)
+        dis = self.dis_ocursion(red_name, blue_name,np.zeros(3), inf, 2)
 
         reward = (dis - dis_) / 50
         return reward
@@ -96,20 +74,11 @@ class reward_obs_done(Tool):
             return True
         return False
 
-    def GlobalObs_Blue(self,inf, done_judge):
-        time = np.array([inf.time / self.args.episode_length], dtype=float)
-        ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7), axis=0)
-        zero_p_v = np.zeros(6)
-        other_info = np.zeros(0)
+    def GlobalObs_Blue(self,inf, done_judge, every_obs:dict):
+        global_obs = np.zeros(0)
         for blue_id in self.blue_sat:
-            if done_judge.BlueIsDw[blue_id] == 2:
-                tmp_info = np.concatenate((np.array([float(2)]), zero_p_v), axis=0)
-            else:
-                tmp_info = np.concatenate((
-                np.array([done_judge.BlueIsDw[blue_id]], dtype=float),
-                inf.pos_cw[blue_id] / 1000, inf.vel_cw[blue_id] * 10),axis=0)
-            other_info = np.concatenate((other_info, tmp_info), axis=0)
-        return np.concatenate((time, ref_info, other_info),axis=0)
+            global_obs = np.concatenate((global_obs,every_obs[blue_id]),axis=0)
+        return global_obs
 
     def single_blue_obs(self, red_name, blue_name, inf, done_judge):
 
@@ -169,13 +138,13 @@ class reward_obs_done(Tool):
     def red_obs(self, assign_res, inf, done_judge):
         obs_red = {red_id: self.single_red_obs(red_name=red_id, blue_name=assign_res[red_id],
                                                inf=inf, done_judge=done_judge) for red_id in self.red_sat}
-        obs_global = self.GlobalObs_Red(inf, done_judge, assign_res)
+        obs_global = self.GlobalObs_Red(inf, done_judge, obs_red)
         return obs_red, obs_global
 
     def blue_obs(self, assign_res, inf, done_judge):
         obs_blue = {blue_id: self.single_blue_obs(red_name=assign_res[blue_id], blue_name=blue_id, inf=inf,
                                                   done_judge=done_judge) for blue_id in self.blue_sat}
-        obs_global = self.GlobalObs_Blue(inf, done_judge)
+        obs_global = self.GlobalObs_Blue(inf, done_judge, obs_blue)
         return obs_blue, obs_global
 
     def red_done(self, assign_res, inf, step_num):
@@ -200,5 +169,5 @@ class reward_obs_done(Tool):
         return reward_blue
 
     def observation_space(self):
-        return {"red":35, "global_red":49,
-                "blue": 28, "global_blue":28}
+        return {"red":35, "global_red":35*3,
+                "blue": 28, "global_blue":28*3}

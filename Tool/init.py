@@ -1,5 +1,5 @@
 import torch
-from Env.scenario2 import scenario
+from Env.scenario import scenario
 # from maddpg.Agent import Actor_Network
 
 # 初始化环境

@@ -66,7 +66,6 @@ class done_judge:
         # 判断任务是否结束
         self.__TaskIsDone()
 
-
     def __red_die(self, inf):
         tmp = copy.deepcopy(self.RedIsDie) # 拷贝一份，只在判断结束之后修改成员变量值，保证判断的原子性
         for red_id in self.red_sat:
@@ -131,7 +130,6 @@ class done_judge:
             for blue_id in self.blue_sat:
                 self.BlueIsDone[blue_id] = True
 
-
         # 红方死完
         task_done_cnt = 0
         for cnt in list(self.RedIsDw.values()):
@@ -141,29 +139,3 @@ class done_judge:
                 self.RedIsDone[red_id] = True
             for blue_id in self.blue_sat:
                 self.BlueIsDone[blue_id] = True
-
-
-
-# class done_judge:
-#     def __init__(self, red_sat, blue_sat, args):
-#         self.red_sat = red_sat
-#         self.blue_sat = blue_sat
-#         self.all_sats = self.red_sat+self.blue_sat
-#         self.args = args
-#         self.last_done = {agent_id: False for agent_id in self.all_sats}
-#         self.done = {agent_id: False for agent_id in self.all_sats}
-#         self.task_done = False
-#
-#     def update_dict(self, inf, assign_res):
-#         if inf.time + 1 == self.args.episode_length:
-#             self.task_done = True
-#             self.done = {agent_id: True for agent_id in self.all_sats}
-#         else:
-#             # 蓝方队形
-#
-#             # 红方队形
-#
-#             # 红方追击成功
-#
-#
-
