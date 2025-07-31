@@ -51,7 +51,7 @@ def run():
     episode = 1
     traj_length = 0
     total_steps = 0
-    evalute_episode = 10
+    evalute_episode = 100
 
     while total_steps < args.max_step:
         red_obs, blue_obs, global_obs_red, global_obs_blue = env.reset()
@@ -112,7 +112,7 @@ def run():
             mappo_red.save(episode=episode + 1, dir=file_o.RED)  # save model
             mappo_blue.save(episode=episode + 1, dir=file_o.BLUE)
 
-        print(f"episode:{episode} {this_ep_reward_sum_blue} time:{time.time()-start_time}")
+        print(f"episode:{episode} time:{time.time()-start_time}")
         if episode % evalute_episode == 0:
             evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue, episode/evalute_episode)
         episode += 1

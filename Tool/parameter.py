@@ -40,7 +40,7 @@ def get_args():
     parser.add_argument('--entropy_coef_decay', type=float, default=0.99, help='Decay rate of entropy_coef')
     parser.add_argument('--l2_reg', type=float, default=1e-3, help='L2 regulization coefficient for Critic')
 
-    parser.add_argument("--result_save_path", type=str, default=r"D:\shen\result\\")
+    parser.add_argument("--result_save_path", type=str, default=r"D:\ShenGang\result\\")
 
     args = parser.parse_args()
 
