@@ -24,12 +24,15 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
     ##################指标#########################
     min_distance_list = {sat_name:[] for sat_name in env.red_sat} #红方指标，用于计算平均最短距离
     die_times = {sat_name:0 for sat_name in env.red_sat+env.blue_sat} #红蓝双方卫星死亡次数
+    reward_avr = {sat_name:0 for sat_name in env.red_sat+env.blue_sat} #奖励
     ##############################################
 
     while episode <= Evalute_ep:
         red_obs, blue_obs, global_obs_red, global_obs_blue = env.reset()
         terminal = False
+        # 红方卫星在一局中距离目标的最小值
         min_dis_ep = {sat_name:env.sim.inf.dis_sat(sat_name,"b"+sat_name[1]) for sat_name in env.red_sat}
+        # 每个卫星在一局中的死亡情况
         is_die_ep = {sat_name:False for sat_name in env.red_sat+env.blue_sat}
         while not terminal:
             total_steps += 1
@@ -46,6 +49,8 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
 
             # 维护min_dis_ep
             for red_name in env.red_sat:
+                # 奖励叠加
+                reward_avr[red_name] += red_reward[red_name]
                 dis_now = env.sim.inf.dis_sat(red_name,"b"+red_name[1])
                 min_dis_ep[red_name] = min(dis_now, min_dis_ep[red_name])
                 dis_array = []
@@ -55,11 +60,13 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
 
                 min_dis = min(dis_array)
                 max_dis = max(dis_array)
+
                 if min_dis < args.safe_dis or max_dis > args.comm_dis:
                     is_die_ep[red_name] = True
-                    break
+
 
             for blue_name in env.blue_sat:
+                reward_avr[blue_name] += blue_reward[blue_name]
                 dis_array = []
                 for blue_id in env.blue_sat:
                     if blue_id != blue_name:
@@ -68,15 +75,11 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
                 max_dis = max(dis_array)
                 if min_dis < args.safe_dis or max_dis > args.comm_dis:
                     is_die_ep[blue_name] = True
-                    break
+
 
             traj_length += 1
-            # 这里所有智能体的done，和trunc都是同时置True，在真实场景中
-            # 达到terminal有两种情况，第一种是所有智能体死亡，或智能体胜利，第二种是达到
-            # 任务时间，强行任务终止
-            # 全局任务终止条件，使用dw判断和使用时间判断
+            # 判断结束
             terminal = list(blue_done.values())[0]
-            if terminal: break
             red_obs, blue_obs = red_obs_next, blue_obs_next
 
         # 处理一局运行的结果
@@ -84,21 +87,28 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
             min_distance_list[red_id].append(min_dis_ep[red_id])
             if is_die_ep[red_id]: die_times[red_id] += 1
 
+
+
         for blue_id in env.blue_sat:
             if is_die_ep[blue_id]: die_times[blue_id] += 1
 
         episode += 1
 
     for red_id in env.red_sat:
+        reward_avr[red_id]/=total_steps
         writer_red[red_id].add_scalars('result_eva',
                                        {'die_times': die_times[red_id],
-                                        'avr_min_dis': sum(min_distance_list[red_id])/len(min_distance_list[red_id])
+                                        'avr_min_dis': sum(min_distance_list[red_id])/len(min_distance_list[red_id]),
+                                        "avr_reward": reward_avr[red_id]
                                        },
                                         evalute_times)
 
     for blue_id in env.blue_sat:
+        reward_avr[blue_id] /= total_steps
         writer_blue[blue_id].add_scalars('result_eva',
-                                       {'die_times': die_times[blue_id]},
+                                       {'die_times': die_times[blue_id],
+                                        "blue_reward": reward_avr[blue_id]
+                                        },
                                         evalute_times)
 
     avr_dis = {red_id:sum(min_distance_list[red_id])/len(min_distance_list[red_id]) for red_id in env.red_sat}

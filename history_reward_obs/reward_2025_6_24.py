@@ -61,10 +61,13 @@ class reward_obs_done(Tool):
 
         if done_judge.BlueIsDw[blue_name]!=0 :return 0
         # 引导奖励
-        dis_ = self.dis_ocursion(red_name, blue_name,act, inf, 2)
-        dis = self.dis_ocursion(red_name, blue_name,np.zeros(3), inf, 2)
+        dis_feature = self.dis_ocursion(red_name=red_name,action=act ,blue_name=blue_name, inf=inf, step=2)
+        dis_current = np.linalg.norm(inf.pos[red_name] - inf.pos[blue_name])
 
-        reward = (dis - dis_) / 50
+        reward = 0
+
+        reward += (dis_current - dis_feature) / 50
+
         return reward
 
     def single_red_done(self, red_name, blue_name, inf, step_num):
