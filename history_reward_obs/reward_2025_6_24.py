@@ -29,12 +29,7 @@ class reward_obs_done(Tool):
                 np.array([done_judge.RedIsDw[red_name]],dtype=float),
                 inf.pos_cw[red_name] / 1000, inf.vel_cw[red_name] * 10),axis=0)
 
-        if done_judge.BlueIsDw[blue_name] == 2:
-            target_blue_info = np.concatenate((np.array([float(2)]), zero_p_v), axis=0)
-        else:
-            target_blue_info = np.concatenate((
-                np.array([done_judge.BlueIsDw[blue_name]],dtype=float),
-                inf.pos_cw[blue_name] / 1000, inf.vel_cw[blue_name] * 10),axis=0)
+        target_blue_info = np.concatenate((inf.pos_cw[blue_name] / 1000, inf.vel_cw[blue_name] * 10),axis=0)
 
         other_info = np.zeros(0)
         for red_id in self.red_sat:
@@ -59,14 +54,14 @@ class reward_obs_done(Tool):
         # 3.如果卫星在之前就已经死亡，则不给予奖励
         if done_judge.RedIsDw[red_name]>1: return 0
 
-        if done_judge.BlueIsDw[blue_name]!=0 :return 0
+        # if done_judge.BlueIsDw[blue_name]!=0 :return 0
         # 引导奖励
         dis_feature = self.dis_ocursion(red_name=red_name,action=act ,blue_name=blue_name, inf=inf, step=2)
         dis_current = np.linalg.norm(inf.pos[red_name] - inf.pos[blue_name])
 
         reward = 0
 
-        reward += (dis_current - dis_feature) / 50
+        reward += (dis_current - dis_feature) / 20
 
         return reward
 
@@ -172,5 +167,5 @@ class reward_obs_done(Tool):
         return reward_blue
 
     def observation_space(self):
-        return {"red":35, "global_red":35*3,
+        return {"red":34, "global_red":34*3,
                 "blue": 28, "global_blue":28*3}

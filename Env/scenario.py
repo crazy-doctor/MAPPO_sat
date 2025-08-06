@@ -144,7 +144,6 @@ class scenario(Tool):
         red_obs, global_obs_red = self.rod.red_obs(assign_res=self.assign_res, inf=self.sim.inf,done_judge=self.done_judge)
         blue_obs, global_obs_blue = self.rod.blue_obs(assign_res=self.assign_res, inf=self.sim.inf,done_judge=self.done_judge)
 
-
         return red_obs, blue_obs,\
                red_reward, blue_reward,\
                red_dead_win, blue_dead_win, \

@@ -109,8 +109,8 @@ def run():
         if episode % args.save_episode == 0:
             # 保存replay buffer以及actor,以及critic
             print("各参数已经保存")
-            mappo_red.save(episode=episode + 1, dir=file_o.RED)  # save model
-            mappo_blue.save(episode=episode + 1, dir=file_o.BLUE)
+            mappo_red.save(episode=episode, dir=file_o.RED)  # save model
+            mappo_blue.save(episode=episode, dir=file_o.BLUE)
 
         print(f"episode:{episode} time:{time.time()-start_time}")
         if episode % evalute_episode == 0:
