@@ -8,7 +8,7 @@ from Tool.astro_tool import Tool
 from Env.done_judge import done_judge # 环境中卫星的任务完成、死亡情况
 from history_reward_obs.reward_2025_6_24 import reward_obs_done as rod
 
-
+# 有don_judge
 class info_generate(ABC):
     @abstractclassmethod
     def red_obs(self, red_name, blue_name, inf):

@@ -14,50 +14,66 @@ class reward_obs_done(Tool):
         return None
 
     def single_red_obs(self, red_name, blue_name, inf, done_judge):
-        time = np.array([inf.time/self.args.episode_length],dtype=float)
-        ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7),axis=0)
+        # time = np.array([inf.time/self.args.episode_length],dtype=float)
 
         # 在每个卫星位置速度前加上卫星的dw次数，如果是第一次
-        zero_p_v = np.zeros(6)
+        # zero_p_v = np.zeros(6)
 
-        if done_judge.RedIsDw[red_name] == 2:
-            my_info = np.concatenate((np.array([float(2)]),zero_p_v), axis=0)
-        else:
-            my_info = np.concatenate((
-                np.array([done_judge.RedIsDw[red_name]],dtype=float),
-                inf.pos_cw[red_name] / 1000, inf.vel_cw[red_name] * 10),axis=0)
+        # if done_judge.RedIsDw[red_name] == 2:
+        #     my_info = np.concatenate((np.array([float(2)]),zero_p_v), axis=0)
+        # else:
+        #     my_info = np.concatenate((
+        #         np.array([done_judge.RedIsDw[red_name]],dtype=float),
+        #         inf.pos_cw[red_name] / 1000, inf.vel_cw[red_name] * 10),axis=0)
+        # if done_judge.BlueIsDw[blue_name] == 2:
+        #     target_blue_info = np.concatenate((np.array([float(2)]), zero_p_v), axis=0)
+        # else:
+        #     target_blue_info = np.concatenate((
+        #         np.array([done_judge.BlueIsDw[blue_name]],dtype=float),
+        #         inf.pos_cw[blue_name] / 1000, inf.vel_cw[blue_name] * 10),axis=0)
 
-        if done_judge.BlueIsDw[blue_name] == 2:
-            target_blue_info = np.concatenate((np.array([float(2)]), zero_p_v), axis=0)
-        else:
-            target_blue_info = np.concatenate((
-                np.array([done_judge.BlueIsDw[blue_name]],dtype=float),
-                inf.pos_cw[blue_name] / 1000, inf.vel_cw[blue_name] * 10),axis=0)
+        # other_info = np.zeros(0)
+        # for red_id in self.red_sat:
+        #     if red_id!=red_name:
+        #         if done_judge.RedIsDw[red_id] == 2:
+        #             tmp_info = np.concatenate((np.array([float(2)]), zero_p_v), axis=0)
+        #         else:
+        #             tmp_info = np.concatenate((
+        #             np.array([done_judge.RedIsDw[red_id]],dtype=float),
+        #             inf.pos_cw[red_id] / 1000, inf.vel_cw[red_id] * 10),axis=0)
+        #
+        #         other_info = np.concatenate((other_info, tmp_info), axis=0)
+
+        ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7), axis=0)
+        my_info = np.concatenate((
+            np.array([done_judge.RedIsDw[red_name]],dtype=float),
+            inf.pos_cw[red_name] / 1000, inf.vel_cw[red_name] * 10),axis=0)
+
+        target_blue_info = np.concatenate((
+            np.array([done_judge.BlueIsDw[blue_name]],dtype=float),
+            inf.pos_cw[blue_name] / 1000, inf.vel_cw[blue_name] * 10),axis=0)
 
         other_info = np.zeros(0)
         for red_id in self.red_sat:
             if red_id!=red_name:
-                if done_judge.RedIsDw[red_id] == 2:
-                    tmp_info = np.concatenate((np.array([float(2)]), zero_p_v), axis=0)
-                else:
-                    tmp_info = np.concatenate((
-                    np.array([done_judge.RedIsDw[red_id]],dtype=float),
-                    inf.pos_cw[red_id] / 1000, inf.vel_cw[red_id] * 10),axis=0)
+                tmp_info = np.concatenate((
+                np.array([done_judge.RedIsDw[red_id]],dtype=float),
+                inf.pos_cw[red_id] / 1000, inf.vel_cw[red_id] * 10),axis=0)
 
                 other_info = np.concatenate((other_info, tmp_info), axis=0)
 
-        return np.concatenate((time, ref_info, my_info, target_blue_info, other_info),axis=0)
+        return np.concatenate((ref_info, my_info, target_blue_info, other_info),axis=0)
 
     def single_red_reward(self, red_name, blue_name, act, inf, done_judge):
-        # 终端奖励
-        # 1.追击成功并且此时任务没结束（第一次追击成功）
-        if done_judge.RedSuccess[red_name] and done_judge.RedIsDw[red_name]==1: return 50
-        # 2.追击失败并且此时卫星还没死（第一次卫星死亡）
-        if done_judge.RedIsDie[red_name] and done_judge.RedIsDw[red_name]==1: return -10
-        # 3.如果卫星在之前就已经死亡，则不给予奖励
-        if done_judge.RedIsDw[red_name]>1: return 0
-
-        if done_judge.BlueIsDw[blue_name]!=0 :return 0
+        # # 终端奖励
+        # # 1.追击成功并且此时任务没结束（第一次追击成功）
+        # if done_judge.RedSuccess[red_name] and done_judge.RedIsDw[red_name]==1: return 50
+        # # 2.追击失败并且此时卫星还没死（第一次卫星死亡）
+        # if done_judge.RedIsDie[red_name] and done_judge.RedIsDw[red_name]==1: return -10
+        # # 3.如果卫星在之前就已经死亡，则不给予奖励
+        # if done_judge.RedIsDw[red_name]>1: return 0
+        #
+        # if done_judge.BlueIsDw[blue_name]!=0 :return 0
         # 引导奖励
         dis = self.dis_ocursion(red_name, blue_name,act, inf, 2)
         dis_ = self.dis_ocursion(red_name, blue_name,np.zeros(3), inf, 2)
@@ -85,7 +101,6 @@ class reward_obs_done(Tool):
         other_info = np.zeros(0)
         for blue_id in self.blue_sat:
             if blue_id!=blue_name:
-
                 tmp_info = np.concatenate((inf.pos_cw[blue_id] / 1000, inf.vel_cw[blue_id] * 10),axis=0)
                 other_info = np.concatenate((other_info, tmp_info), axis=0)
         return np.concatenate((time, ref_info, my_info, other_info),axis=0)
@@ -113,8 +128,8 @@ class reward_obs_done(Tool):
         return False
 
     def dis_ocursion(self, red_name, blue_name,action, inf, step):  # 以当前的状态，向前推理step步后的距离
-        pos_red_cw, vel_red_cw = Tool.CW(self, r_sat=inf.pos[red_name], v_sat=inf.vel[red_name],
-                                         r_ref=inf.pos["main_sat"], v_ref=inf.vel["main_sat"]+action,
+        pos_red_cw, vel_red_cw = Tool.CW(self, r_sat=inf.pos[red_name], v_sat=inf.vel[red_name]+action,
+                                         r_ref=inf.pos["main_sat"], v_ref=inf.vel["main_sat"],
                                          t=step * self.args.step_time)
 
         pos_blue_cw, vel_blue_cw = Tool.CW(self, r_sat=inf.pos[blue_name],
