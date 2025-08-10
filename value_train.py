@@ -12,7 +12,7 @@ from tqdm import tqdm
 # 自建包
 # from maddpg.Agent import Actor_Network
 from Env.scenario import scenario
-import Tool.parameter as parameter
+import Env.parameter as parameter
 from Tool.init import create_net, get_reset_env
 
 

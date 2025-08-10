@@ -6,7 +6,7 @@ from abc import ABC, abstractclassmethod
 from Tool.astro_tool import Tool
 ## 观测、奖励、结束方案
 from Env.done_judge import done_judge # 环境中卫星的任务完成、死亡情况
-from history_reward_obs.reward_2025_6_24 import reward_obs_done as rod
+from Env import reward
 
 # 有don_judge
 class info_generate(ABC):
@@ -67,15 +67,11 @@ class scenario(Tool):
         # 记录训练状态
         self.episode_num = 0
         self.step_num = 0
-
-
-        self.rod = rod(args=self.args,red_sat=self.red_sat,blue_sat=self.blue_sat)
+        self.rod = reward.reward_obs_done(args=self.args,red_sat=self.red_sat,blue_sat=self.blue_sat)
         ## 分配方案
         # from task_assign import TaskAssign as task_assign
         # self.task_assign = task_assign(args=args, red_sat=self.red_sat, blue_sat=self.blue_sat,
-        #                                red_obs_dim=self.observation_space("r0")["red"])
-
-
+        #                                red_obs_dim=self.observation_space()["red"])
 
 
     # 交互函数1
@@ -84,20 +80,19 @@ class scenario(Tool):
         self.step_num = 0
 
         self.sim.Reset_Env()
-        self.done_judge.reset_dict() #初始化完成状态
+        self.rod.reset()
 
         # 分配
         if self.mode == "evalute":
-            self.assign_res = self.task_assign.assign(self.sim.inf,blue_die=self.blue_die)
+            self.assign_res = self.task_assign.assign(self.sim.inf,blue_die=self.rod.blue_done)
         else:
             self.assign_res = copy.deepcopy({**{red_id: "b" + red_id[1] for red_id in self.red_sat},
                                **{blue_id: "r" + blue_id[1] for blue_id in self.blue_sat}})
 
         # 根据分配结果制作观测
-        red_obs, global_obs_red = self.rod.red_obs(assign_res=self.assign_res, inf=self.sim.inf, done_judge=self.done_judge)
-        blue_obs, global_obs_blue = self.rod.blue_obs(assign_res=self.assign_res, inf=self.sim.inf, done_judge=self.done_judge)
+        obs_red, obs_global_red, obs_blue, obs_global_blue = self.rod.obs_generate(self.assign_res, self.sim.inf)
 
-        return red_obs, blue_obs, global_obs_red, global_obs_blue
+        return obs_red, obs_global_red, obs_blue, obs_global_blue
 
 
     def step(self, action,noise=False):
@@ -112,41 +107,32 @@ class scenario(Tool):
 
         delta_v_dict = self.convert_v(action_copy)
 
-        # done是指这一时刻是否死掉，而obs的观测是下一时刻是否死亡，目前obs是使用上一时刻的
-        # self.done_judge.update_dict(inf=self.sim.inf, assign_res=self.assign_res)
+        red_done, blue_done = self.rod.done_judge(
+            inf=self.sim.inf,
+            assign_res=self.assign_res)
 
-        red_dead_win = {red_id: bool(self.done_judge.RedIsDw[red_id]) for red_id in self.red_sat}
-        blue_dead_win = {blue_id: bool(self.done_judge.BlueIsDw[blue_id]) for blue_id in self.blue_sat}
 
-        red_done = copy.deepcopy(self.done_judge.RedIsDone)
-        blue_done = copy.deepcopy(self.done_judge.BlueIsDone)
-
-        red_reward = self.rod.red_reward(assign_res=self.assign_res, inf=self.sim.inf,done_judge=self.done_judge,action=delta_v_dict)
-        blue_reward = self.rod.blue_reward(assign_res=self.assign_res, inf=self.sim.inf,done_judge=self.done_judge,action=delta_v_dict)
+        red_reward, blue_reward = self.rod.reward_genarate(assign_res=self.assign_res,
+                                                           inf=self.sim.inf,
+                                                           done_judge=self.done_judge,
+                                                           action=delta_v_dict)
 
         self.sim.Step_Env(delta_v_dict=delta_v_dict) #抽象接口的输入单位为km/s
-
-        self.done_judge.update_dict(inf=self.sim.inf, assign_res=self.assign_res)
-
 
         # 任务分配
         if(self.mode=="train"):
             self.assign_res = copy.deepcopy({**{red_id: "b" + red_id[1] for red_id in self.red_sat},
                                **{blue_id: "r" + blue_id[1] for blue_id in self.blue_sat}}) ##训练状态下为，单智能体训练，只有在测试阶段需要进行多对多分配
         else:
-            if self.step_num%10==0 and sum(list(self.blue_die.values()))<len(list(self.blue_die.values())):
-                self.assign_res = self.task_assign.assign(self.sim.inf,blue_die=self.blue_die)
-                # with open(r"E:\code_list\red_battle_blue\results\assign_result.txt", "a") as f:
-                #     f.write(f"ep{self.episode_num+1} step{self.step_num+1}: " +
-                #             str({red_id: self.assign_res[red_id] for red_id in self.red_sat }) + "\n")
+            if self.step_num%10==0 and sum(list(self.rod.blue_done.values()))<len(list(self.rod.blue_done.values())):
+                self.assign_res = self.task_assign.assign(self.sim.inf,blue_die=self.rod.blue_done)
 
         # 根据分配结果制作观测
-        red_obs, global_obs_red = self.rod.red_obs(assign_res=self.assign_res, inf=self.sim.inf,done_judge=self.done_judge)
-        blue_obs, global_obs_blue = self.rod.blue_obs(assign_res=self.assign_res, inf=self.sim.inf,done_judge=self.done_judge)
+        red_obs, global_obs_red, blue_obs, global_obs_blue = \
+            self.rod.obs_generate(assign_res=self.assign_res, inf=self.sim.inf)
 
         return red_obs, blue_obs,\
                red_reward, blue_reward,\
-               red_dead_win, blue_dead_win, \
                red_done, blue_done,\
                global_obs_red, global_obs_blue
 

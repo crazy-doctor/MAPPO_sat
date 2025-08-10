@@ -121,7 +121,7 @@ class Mixed_Sim(Sim_Abstract):
         return data
 
     def Reset_Env(self):
-        self.inf.init_state(self.args.orbit_alt)
+        self.inf.init_state()
         self.lastTimeStamp = -1
         self.Current_Time = -1
         self.done_step = {name: 0 for name in self.red_sat}

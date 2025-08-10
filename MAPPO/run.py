@@ -6,13 +6,10 @@ import time
 import torch
 
 from Tool.init import get_reset_env
-from Tool import parameter
+from Env import parameter
 from Tool import File_Path
 from evaluate import evalute
 
-# 1.将之前的环境接入到MAPPO1中
-# 2.编写evaluate进行测试
-# 3.监控训练过程中的loss变化
 
 def run():
 
@@ -54,7 +51,7 @@ def run():
     evalute_episode = 100
 
     while total_steps < args.max_step:
-        red_obs, blue_obs, global_obs_red, global_obs_blue = env.reset()
+        red_obs, global_obs_red, blue_obs, global_obs_blue = env.reset()
         terminal = False
         this_ep_reward_sum_blue = {agent_id: 0 for agent_id in env.blue_sat}
         start_time = time.time()
@@ -65,19 +62,19 @@ def run():
             act = {**action_red, **action_blue}
 
             red_obs_next, blue_obs_next, \
-            red_reward, blue_reward, \
-            red_dead_win, blue_dead_wim, \
+            red_reward, blue_reward,\
             red_done, blue_done, \
             global_obs_red_next, global_obs_blue_next \
             = env.step(act)
 
             traj_length += 1
+            # 结束判断
+            terminal = False
+            if sum(list(blue_done.values()))== len(env.blue_sat):
+                terminal = True
 
-            # 这里所有智能体的done，和trunc都是同时置True，在真实场景中
-            # 达到terminal有两种情况，第一种是所有智能体死亡，或智能体胜利，第二种是达到
-            # 任务时间，强行任务终止
-            # 全局任务终止条件，使用dw判断和使用时间判断
-            terminal = list(blue_done.values())[0]
+            if sum(list(red_done.values()))== len(env.red_sat):
+                terminal = True
             mask = 0.0 if terminal else 1.0
             # 存储数据
             mappo_red.store_memory(red_obs, global_obs_red, action_red,
@@ -106,12 +103,12 @@ def run():
         # for agent_id, r in this_ep_reward_sum_blue.items():  # record reward
         #     writer_blue[agent_id].add_scalar("reward_agent", r, episode + 1)
         # 保存模型
+
         if episode % args.save_episode == 0:
             # 保存replay buffer以及actor,以及critic
             print("各参数已经保存")
             mappo_red.save(episode=episode, dir=file_o.RED)  # save model
             mappo_blue.save(episode=episode, dir=file_o.BLUE)
-
         print(f"episode:{episode} time:{time.time()-start_time}")
         if episode % evalute_episode == 0:
             evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue, episode/evalute_episode)

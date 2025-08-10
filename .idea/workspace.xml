@@ -6,8 +6,31 @@
   <component name="ChangeListManager">
     <list default="true" id="d082e2ce-9a2e-45fb-95a6-1348b4bcebab" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Algorithm/agent.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Algorithm/mappo.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Algorithm/memory.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Algorithm/networks.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Algorithm/run.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Env/interface_sim.py" beforeDir="false" afterPath="$PROJECT_DIR$/Env/interface_sim.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Env/scenario.py" beforeDir="false" afterPath="$PROJECT_DIR$/Env/scenario.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/history_reward_obs/reward_2025_7_15.py" beforeDir="false" afterPath="$PROJECT_DIR$/history_reward_obs/reward_2025_7_15.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Env/scenario1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Env/scenario2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/agent.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/evaluate.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/mappo.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/memory.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/networks.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/plot.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/run.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/vec_env.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO1/新建 文本文档.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPO/PPO.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPO/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPO/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PPO/utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tool/parameter.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/value_train.py" beforeDir="false" afterPath="$PROJECT_DIR$/value_train.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +64,7 @@
       <recent name="D:\shen\code_list\MAPPO\history_reward_obs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.run (1)">
+  <component name="RunManager" selected="Python.run">
     <configuration name="evaluate" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MAPPO" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -55,6 +78,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/MAPPO1/evaluate.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="mappo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="MAPPO" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/MAPPO" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/MAPPO/mappo.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -105,7 +149,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MAPPO" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -113,11 +157,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/MAPPO" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/MAPPO/run.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -128,10 +172,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.run" />
+        <item itemvalue="Python.mappo" />
         <item itemvalue="Python.run (1)" />
         <item itemvalue="Python.evaluate" />
         <item itemvalue="Python.run (2)" />
-        <item itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -159,6 +204,7 @@
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="__py_debug_temp_var_1934627094" />
+        <watch expression="terminal" />
       </configuration>
     </watches-manager>
   </component>

@@ -28,7 +28,7 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
     ##############################################
 
     while episode <= Evalute_ep:
-        red_obs, blue_obs, global_obs_red, global_obs_blue = env.reset()
+        red_obs, global_obs_red, blue_obs, global_obs_blue = env.reset()
         terminal = False
         # 红方卫星在一局中距离目标的最小值
         min_dis_ep = {sat_name:env.sim.inf.dis_sat(sat_name,"b"+sat_name[1]) for sat_name in env.red_sat}
@@ -42,7 +42,6 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
 
             red_obs_next, blue_obs_next, \
             red_reward, blue_reward, \
-            red_dead_win, blue_dead_wim, \
             red_done, blue_done, \
             global_obs_red_next, global_obs_blue_next \
             = env.step(act)
