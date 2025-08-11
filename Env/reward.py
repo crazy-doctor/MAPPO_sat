@@ -38,28 +38,28 @@ class reward_obs_done(Tool):
         # 追到目标
         if inf.dis_sat(red_name, blue_name) < self.args.done_distance:
             return True
-        # 编队
-        for red_id in self.red_sat:
-            if red_id != red_name and (not self.red_done[red_id]):
-                dis = inf.dis_sat(name1=red_id, name2=red_name)
-                if dis < self.args.safe_dis or dis > self.args.comm_dis:
-                    return True
+        # # 编队
+        # for red_id in self.red_sat:
+        #     if red_id != red_name and (not self.red_done[red_id]):
+        #         dis = inf.dis_sat(name1=red_id, name2=red_name)
+        #         if dis < self.args.safe_dis or dis > self.args.comm_dis:
+        #             return True
         if (inf.time + 1 == self.args.episode_length):
             return True
         return False
 
     def single_blue_done(self, red_name, blue_name, inf):
         # 如果已经死亡，则不用再判断
-        if self.blue_done[blue_name]: return True
-        # 追到目标
-        if inf.dis_sat(red_name, blue_name) < self.args.done_distance:
-            return True
-        # 编队
-        for blue_id in self.blue_sat:
-            if blue_id != blue_name and (not self.blue_done[blue_id]):
-                dis = inf.dis_sat(name1=blue_id, name2=blue_name)
-                if dis < self.args.safe_dis or dis > self.args.comm_dis:
-                    return True
+        # if self.blue_done[blue_name]: return True
+        # # 追到目标
+        # if inf.dis_sat(red_name, blue_name) < self.args.done_distance:
+        #     return True
+        # # 编队
+        # for blue_id in self.blue_sat:
+        #     if blue_id != blue_name and (not self.blue_done[blue_id]):
+        #         dis = inf.dis_sat(name1=blue_id, name2=blue_name)
+        #         if dis < self.args.safe_dis or dis > self.args.comm_dis:
+        #             return True
         if (inf.time + 1 == self.args.episode_length):
             return True
         return False
@@ -82,7 +82,8 @@ class reward_obs_done(Tool):
         time = np.array([inf.time/self.args.episode_length],dtype=float)
         ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7),axis=0)*done_mask
 
-        my_info = np.concatenate((inf.pos_cw[red_name] / 1000,
+        my_info = np.concatenate((np.array([done_mask]),
+                                  inf.pos_cw[red_name] / 1000,
                                   inf.vel_cw[red_name] * 10),axis=0)*done_mask
 
         target_blue_info = np.concatenate((inf.pos_cw[blue_name] / 1000,
@@ -112,7 +113,7 @@ class reward_obs_done(Tool):
 
         ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7),axis=0)*done_mask
 
-        my_info = np.concatenate((np.array([int(1-self.blue_done[blue_name])],dtype=float),
+        my_info = np.concatenate((np.array([done_mask],dtype=float),
                                   inf.pos_cw[blue_name] / 1000,
                                   inf.vel_cw[blue_name] * 10),axis=0)*done_mask
         other_info = np.zeros(0)
@@ -144,15 +145,15 @@ class reward_obs_done(Tool):
 
 
     def single_red_reward(self, red_name, blue_name, act, inf, done_judge):
-        # 任务成功奖励
-        if inf.dis_sat(red_name, blue_name) < self.args.done_distance:
-            return 50
-        # 卫星死亡惩罚
-        for red_id in self.red_sat:
-            if red_id != red_name and self.red_done[red_id]:
-                dis = inf.dis_sat(name1=red_id, name2=red_name)
-                if dis < self.args.safe_dis or dis > self.args.comm_dis:
-                    return -10
+        # # 任务成功奖励
+        # if inf.dis_sat(red_name, blue_name) < self.args.done_distance:
+        #     return 50
+        # # 卫星死亡惩罚
+        # for red_id in self.red_sat:
+        #     if red_id != red_name and self.red_done[red_id]:
+        #         dis = inf.dis_sat(name1=red_id, name2=red_name)
+        #         if dis < self.args.safe_dis or dis > self.args.comm_dis:
+        #             return -10
         # 否则就以当前时刻距离惩罚，鼓励智能体减少距离
         dis_current = inf.dis_sat(red_name, blue_name)
         return -dis_current/20

@@ -6,31 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="d082e2ce-9a2e-45fb-95a6-1348b4bcebab" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Algorithm/agent.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Algorithm/mappo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Algorithm/memory.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Algorithm/networks.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Algorithm/run.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Env/interface_sim.py" beforeDir="false" afterPath="$PROJECT_DIR$/Env/interface_sim.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Env/scenario.py" beforeDir="false" afterPath="$PROJECT_DIR$/Env/scenario.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Env/scenario1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Env/scenario2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/agent.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/evaluate.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/mappo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/memory.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/networks.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/plot.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/run.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/vec_env.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MAPPO1/新建 文本文档.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPO/PPO.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPO/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPO/test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PPO/utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tool/parameter.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/value_train.py" beforeDir="false" afterPath="$PROJECT_DIR$/value_train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Env/reward.py" beforeDir="false" afterPath="$PROJECT_DIR$/Env/reward.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO/evaluate.py" beforeDir="false" afterPath="$PROJECT_DIR$/MAPPO/evaluate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MAPPO/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/MAPPO/run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

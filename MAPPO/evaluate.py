@@ -4,7 +4,8 @@ from torch.utils.tensorboard import SummaryWriter
 import os
 
 from Tool import File_Path
-def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_times):
+from Tool import draw_picture
+def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_times,file_o):
 
     print("=============================================================")
     print(f"第{int(evalute_times)}次评估开始")
@@ -20,6 +21,11 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
     result_path = file_result+current_folder+"\\"
     if not os.path.exists(result_path):
         os.makedirs(result_path)
+
+    # draw_dis = draw_picture.draw_distance(data_length=args.episode_length,
+    #                                       save_dir_red=file_o.picture_path_red,
+    #                                       save_dir_blue=file_o.picture_path_blue,
+    #                                       args=args)
 
     ##################指标#########################
     min_distance_list = {sat_name:[] for sat_name in env.red_sat} #红方指标，用于计算平均最短距离
@@ -37,7 +43,8 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
         while not terminal:
             total_steps += 1
             action_red, prob_red = mappo_red.choose_action(red_obs, evalute=True)
-            action_blue, prob_blue = mappo_blue.choose_action(blue_obs,evalute=True)
+            # action_blue, prob_blue = mappo_blue.choose_action(blue_obs,evalute=True)
+            action_blue = {sat_id: np.ones(3) * 0.5 for sat_id in env.blue_sat}
             act = {**action_red, **action_blue}
 
             red_obs_next, blue_obs_next, \
@@ -87,7 +94,6 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
             if is_die_ep[red_id]: die_times[red_id] += 1
 
 
-
         for blue_id in env.blue_sat:
             if is_die_ep[blue_id]: die_times[blue_id] += 1
 
@@ -102,13 +108,13 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
                                        },
                                         evalute_times)
 
-    for blue_id in env.blue_sat:
-        reward_avr[blue_id] /= total_steps
-        writer_blue[blue_id].add_scalars('result_eva',
-                                       {'die_times': die_times[blue_id],
-                                        "blue_reward": reward_avr[blue_id]
-                                        },
-                                        evalute_times)
+    # for blue_id in env.blue_sat:
+    #     reward_avr[blue_id] /= total_steps
+    #     writer_blue[blue_id].add_scalars('result_eva',
+    #                                    {'die_times': die_times[blue_id],
+    #                                     "blue_reward": reward_avr[blue_id]
+    #                                     },
+    #                                     evalute_times)
 
     avr_dis = {red_id:sum(min_distance_list[red_id])/len(min_distance_list[red_id]) for red_id in env.red_sat}
     print("评估结果:")
