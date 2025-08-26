@@ -107,16 +107,6 @@ class scenario(Tool):
 
         delta_v_dict = self.convert_v(action_copy)
 
-        red_done, blue_done = self.rod.done_judge(
-            inf=self.sim.inf,
-            assign_res=self.assign_res)
-
-
-        red_reward, blue_reward = self.rod.reward_genarate(assign_res=self.assign_res,
-                                                           inf=self.sim.inf,
-                                                           done_judge=self.done_judge,
-                                                           action=delta_v_dict)
-
         self.sim.Step_Env(delta_v_dict=delta_v_dict) #抽象接口的输入单位为km/s
 
         # 任务分配
@@ -127,6 +117,10 @@ class scenario(Tool):
             if self.step_num%10==0 and sum(list(self.rod.blue_done.values()))<len(list(self.rod.blue_done.values())):
                 self.assign_res = self.task_assign.assign(self.sim.inf,blue_die=self.rod.blue_done)
 
+        red_reward, blue_reward = self.rod.reward_genarate(assign_res=self.assign_res,
+                                                   inf=self.sim.inf,
+                                                   action=delta_v_dict)
+        red_done, blue_done = self.rod.done_judge(inf=self.sim.inf, assign_res=self.assign_res)
         # 根据分配结果制作观测
         red_obs, global_obs_red, blue_obs, global_obs_blue = \
             self.rod.obs_generate(assign_res=self.assign_res, inf=self.sim.inf)

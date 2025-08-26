@@ -22,28 +22,33 @@ class Agent:
 
 
     def choose_action(self, observation, evalute):
-        if evalute:
-            with T.no_grad():
+        with T.no_grad():
+            if evalute:
                 state = T.tensor(observation, dtype=T.float,
                                  device=self.actor.device)
 
                 alpha, beta = self.actor.get_alpha_beta(state)
 
-                action = alpha / (alpha + beta)
-                dist = Beta(alpha, beta)
+                epsilon = 1e-6
+                alpha = T.clamp(alpha, min=1+epsilon)
+                beta = T.clamp(beta, min=1+epsilon)
 
+                action = (alpha-1.0) / (alpha + beta - 2.0)
+                dist = Beta(alpha, beta)
+                action = T.clamp(action, min=0.0, max=1.0)
                 # 计算众数处的概率密度值
                 probs = dist.log_prob(action)
-            return action.cpu().numpy(), probs.cpu().numpy()
-        else:
-            with T.no_grad():
+                return action.cpu().numpy(), probs.cpu().numpy()
+            else:
+
                 state = T.tensor(observation, dtype=T.float,
                                  device=self.actor.device)
 
                 dist = self.actor.get_dist(state)
                 action = dist.sample()
+                action = T.clamp(action, min=0.0, max=1.0)
                 probs = dist.log_prob(action)
-            return action.cpu().numpy(), probs.cpu().numpy()
+                return action.cpu().numpy(), probs.cpu().numpy()
 
 
 

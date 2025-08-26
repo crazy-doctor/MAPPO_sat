@@ -25,8 +25,8 @@ class ContinuousActorNetwork(nn.Module):
         x = T.tanh(self.fc1(state))
         x = T.tanh(self.fc2(x))
         x = T.tanh(self.fc3(x))
-        alpha = F.relu(self.alpha(x)) + 1.0
-        beta = F.relu(self.beta(x)) + 1.0
+        alpha = F.softplus(self.alpha(x)) + 1.0
+        beta = F.softplus(self.beta(x)) + 1.0
 
         return alpha, beta
 
@@ -41,7 +41,7 @@ class ContinuousActorNetwork(nn.Module):
 
 class ContinuousCriticNetwork(nn.Module):
     def __init__(self, input_dims, args,
-                 hidden_dims=512):
+                 hidden_dims=256):
         super(ContinuousCriticNetwork, self).__init__()
 
         self.fc1 = nn.Linear(input_dims, hidden_dims)

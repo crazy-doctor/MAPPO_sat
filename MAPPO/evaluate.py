@@ -2,6 +2,7 @@ import time
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import os
+import copy
 
 from Tool import File_Path
 from Tool import draw_picture
@@ -54,45 +55,38 @@ def evalute(args, env, mappo_red, mappo_blue, writer_red, writer_blue,evalute_ti
             = env.step(act)
 
             # 维护min_dis_ep
+            die_tmp1 = copy.deepcopy(is_die_ep)
             for red_name in env.red_sat:
                 # 奖励叠加
                 reward_avr[red_name] += red_reward[red_name]
                 dis_now = env.sim.inf.dis_sat(red_name,"b"+red_name[1])
                 min_dis_ep[red_name] = min(dis_now, min_dis_ep[red_name])
-                dis_array = []
                 for red_id in env.red_sat:
-                    if red_name != red_id:
-                        dis_array.append(env.sim.inf.dis_sat(red_name, red_id))
+                    if red_name != red_id and not is_die_ep[red_id]:
+                        dis_tmp = env.sim.inf.dis_sat(red_name, red_id)
+                        if is_die_ep[red_name] or dis_tmp < args.safe_dis or dis_tmp > args.comm_dis:
+                            die_tmp1[red_name] = True
+            is_die_ep = die_tmp1
 
-                min_dis = min(dis_array)
-                max_dis = max(dis_array)
-
-                if min_dis < args.safe_dis or max_dis > args.comm_dis:
-                    is_die_ep[red_name] = True
-
-
+            die_tmp2 = copy.deepcopy(is_die_ep)
             for blue_name in env.blue_sat:
                 reward_avr[blue_name] += blue_reward[blue_name]
-                dis_array = []
                 for blue_id in env.blue_sat:
-                    if blue_id != blue_name:
-                        dis_array.append(env.sim.inf.dis_sat(blue_name, blue_id))
-                min_dis = min(dis_array)
-                max_dis = max(dis_array)
-                if min_dis < args.safe_dis or max_dis > args.comm_dis:
-                    is_die_ep[blue_name] = True
-
+                    if blue_id != blue_name and not is_die_ep[blue_id]:
+                        dis_tmp = env.sim.inf.dis_sat(blue_name, blue_id)
+                        if is_die_ep[blue_name] or dis_tmp < args.safe_dis or dis_tmp > args.comm_dis:
+                            die_tmp2[blue_name] = True
+            is_die_ep = die_tmp2
 
             traj_length += 1
             # 判断结束
-            terminal = list(blue_done.values())[0]
+            terminal = (sum(list(red_done.values())) == len(env.red_sat))
             red_obs, blue_obs = red_obs_next, blue_obs_next
 
         # 处理一局运行的结果
         for red_id in env.red_sat:
             min_distance_list[red_id].append(min_dis_ep[red_id])
             if is_die_ep[red_id]: die_times[red_id] += 1
-
 
         for blue_id in env.blue_sat:
             if is_die_ep[blue_id]: die_times[blue_id] += 1

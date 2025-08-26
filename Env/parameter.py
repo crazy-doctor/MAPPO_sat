@@ -9,7 +9,7 @@ def get_args():
     parser.add_argument("--step_time", type=int, default=300)
     parser.add_argument('--red_num', type=int, default=3)
     parser.add_argument('--blue_num', type=int, default=3)
-    parser.add_argument('--red_delta_v_limit', type=int, default=1)
+    parser.add_argument('--red_delta_v_limit', type=int, default=1.5)
     parser.add_argument('--blue_delta_v_limit', type=int, default=0.5)
     parser.add_argument('--init_distance', type=int, default=200)
     parser.add_argument('--done_distance', type=int, default=70)

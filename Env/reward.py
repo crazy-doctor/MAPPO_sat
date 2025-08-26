@@ -1,5 +1,6 @@
 # 系统包
 import numpy as np
+import copy
 # 自建包
 from Tool.astro_tool import Tool
 from Env import information
@@ -18,12 +19,14 @@ class reward_obs_done(Tool):
 
 ##############################  判断卫星是否死亡或成功（结束）  #################################################
     def done_judge(self, inf, assign_res):
-        done_tmp_red = self.red_done
+        done_tmp_red = copy.deepcopy(self.red_done)
         for red_id in self.red_sat:
             target_blue = assign_res[red_id]
             done_tmp_red[red_id] = self.single_red_done(red_id, target_blue, inf)
+            # if done_tmp_red[red_id]:
+            #     print("a")
 
-        done_tmp_blue = self.blue_done
+        done_tmp_blue = copy.deepcopy(self.blue_done)
         for blue_id in self.blue_sat:
             target_red = assign_res[blue_id]
             done_tmp_blue[blue_id] = self.single_blue_done(target_red, blue_id, inf)
@@ -39,12 +42,12 @@ class reward_obs_done(Tool):
         if inf.dis_sat(red_name, blue_name) < self.args.done_distance:
             return True
         # # 编队
-        # for red_id in self.red_sat:
-        #     if red_id != red_name and (not self.red_done[red_id]):
-        #         dis = inf.dis_sat(name1=red_id, name2=red_name)
-        #         if dis < self.args.safe_dis or dis > self.args.comm_dis:
-        #             return True
-        if (inf.time + 1 == self.args.episode_length):
+        for red_id in self.red_sat:
+            if red_id != red_name and (not self.red_done[red_id]):
+                dis = inf.dis_sat(name1=red_id, name2=red_name)
+                if dis < self.args.safe_dis or dis > self.args.comm_dis:
+                    return True
+        if (inf.time == self.args.episode_length):
             return True
         return False
 
@@ -60,7 +63,7 @@ class reward_obs_done(Tool):
         #         dis = inf.dis_sat(name1=blue_id, name2=blue_name)
         #         if dis < self.args.safe_dis or dis > self.args.comm_dis:
         #             return True
-        if (inf.time + 1 == self.args.episode_length):
+        if (inf.time == self.args.episode_length):
             return True
         return False
 #############################################   观测    ################################################
@@ -78,32 +81,29 @@ class reward_obs_done(Tool):
         return obs_red, obs_global_red, obs_blue, obs_global_blue
 
     def single_red_obs(self, red_name, blue_name, inf):
-        done_mask = 0 if self.red_done[red_name] else 1
         time = np.array([inf.time/self.args.episode_length],dtype=float)
-        ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7),axis=0)*done_mask
-
-        my_info = np.concatenate((np.array([done_mask]),
-                                  inf.pos_cw[red_name] / 1000,
-                                  inf.vel_cw[red_name] * 10),axis=0)*done_mask
-
-        target_blue_info = np.concatenate((inf.pos_cw[blue_name] / 1000,
-                                  inf.vel_cw[blue_name] * 10),axis=0)*done_mask
-
-        other_info = np.zeros(0)
+        ref_info = np.concatenate((inf.pos["main_sat"] / 42157, inf.vel["main_sat"] / 7),axis=0)
+        sat_info = np.zeros(0)
         for red_id in self.red_sat:
-            if red_id!=red_name:
-                this_sat_done = 1.0-float(self.red_done[red_id])
-                tmp_info = np.concatenate((np.array([this_sat_done],dtype=float),
-                inf.pos_cw[red_id] / 1000, inf.vel_cw[red_id] * 10),axis=0)
-                tmp_info *= this_sat_done
-                other_info = np.concatenate((other_info, tmp_info), axis=0)
-        other_info *= done_mask
-        return np.concatenate((time, ref_info, my_info, target_blue_info, other_info),axis=0)
+            red_die_mask = 1-int(self.red_done[red_id])
+            red_info = np.concatenate((np.array([red_die_mask]),
+                                        inf.pos_cw[red_id] / 1000, inf.vel_cw[red_id] * 10),axis=0)
+            blue_id = "b"+red_id[1]
+            blue_die_mask = 1 - int(self.blue_done[blue_id])
+            blue_info = np.concatenate((np.array([blue_die_mask]),
+                                       inf.pos_cw[blue_id] / 1000, inf.vel_cw[blue_id] * 10),axis=0)
+            dis = inf.dis_sat(red_id,blue_id)/200
+            tmp_info = np.concatenate((red_info, blue_info, np.array([dis])),axis=0)*red_die_mask
+
+            sat_info = np.concatenate((sat_info, tmp_info),axis=0)
+
+        return np.concatenate((time, ref_info, sat_info),axis=0)
 
     def GlobalObs_Red(self,inf, every_obs:dict):
-        global_obs = np.zeros(0)
-        for red_id in self.red_sat:
-            global_obs = np.concatenate((global_obs,every_obs[red_id]),axis=0)
+        # global_obs = np.zeros(0)
+        # for red_id in self.red_sat:
+        #     global_obs = np.concatenate((global_obs,every_obs[red_id]),axis=0)
+        global_obs = list(every_obs.values())[0]
         return global_obs
 
     def single_blue_obs(self, red_name, blue_name, inf):
@@ -134,32 +134,36 @@ class reward_obs_done(Tool):
             global_obs = np.concatenate((global_obs, every_obs[blue_id]), axis=0)
         return global_obs
 #############################################   奖励    #######################################################
-    def reward_genarate(self, assign_res, inf, done_judge, action):
-        reward_red = {red_id: self.single_red_reward(red_id, assign_res[red_id], action[red_id], inf,
-                                                     done_judge=done_judge) for red_id in self.red_sat}
+    def reward_genarate(self, assign_res, inf, action):
+        reward_red = {red_id: self.single_red_reward(red_id, assign_res[red_id], action[red_id], inf)
+                      for red_id in self.red_sat}
 
         reward_blue = {blue_id: self.single_blue_reward(assign_res[blue_id],
-                       blue_id, inf,done_judge=done_judge, action=action[blue_id]) for blue_id in self.blue_sat}
+                       blue_id, inf, action=action[blue_id]) for blue_id in self.blue_sat}
 
         return reward_red, reward_blue
 
 
-    def single_red_reward(self, red_name, blue_name, act, inf, done_judge):
+    def single_red_reward(self, red_name, blue_name, act, inf):
+        # 卫星死亡情况
+        if self.red_done[red_name]: return 0
         # # 任务成功奖励
-        # if inf.dis_sat(red_name, blue_name) < self.args.done_distance:
-        #     return 50
+        if inf.dis_sat(red_name, blue_name) < self.args.done_distance:
+            return 100
         # # 卫星死亡惩罚
-        # for red_id in self.red_sat:
-        #     if red_id != red_name and self.red_done[red_id]:
-        #         dis = inf.dis_sat(name1=red_id, name2=red_name)
-        #         if dis < self.args.safe_dis or dis > self.args.comm_dis:
-        #             return -10
+        for red_id in self.red_sat:
+            if red_id != red_name and not self.red_done[red_id]:
+                dis = inf.dis_sat(name1=red_id, name2=red_name)
+                if dis < self.args.safe_dis or dis > self.args.comm_dis:
+                    return -100
         # 否则就以当前时刻距离惩罚，鼓励智能体减少距离
+        # dis_ = self.dis_ocursion(red_name, blue_name, act, inf, 3)
+        # dis =  self.dis_ocursion(red_name, blue_name, np.zeros(3), inf, 3)
         dis_current = inf.dis_sat(red_name, blue_name)
-        return -dis_current/20
+        return -dis_current/150
 
 
-    def single_blue_reward(self, red_name, blue_name, inf, done_judge,action):
+    def single_blue_reward(self, red_name, blue_name, inf, action):
 
         for blue_id in self.blue_sat:
             if blue_id != blue_name and self.blue_done[blue_id]:
@@ -170,12 +174,11 @@ class reward_obs_done(Tool):
 
 
     def dis_ocursion(self, red_name, blue_name,action, inf, step):  # 以当前的状态，向前推理step步后的距离
-        pos_red_cw, vel_red_cw = Tool.CW(self, r_sat=inf.pos[red_name], v_sat=inf.vel[red_name],
-                                         r_ref=inf.pos["main_sat"], v_ref=inf.vel["main_sat"]+action,
+        pos_red_cw, vel_red_cw = Tool.CW(self, r_sat=inf.pos[red_name], v_sat=inf.vel[red_name]+action,
+                                         r_ref=inf.pos["main_sat"], v_ref=inf.vel["main_sat"],
                                          t=step * self.args.step_time)
 
-        pos_blue_cw, vel_blue_cw = Tool.CW(self, r_sat=inf.pos[blue_name],
-                                           v_sat=inf.vel[blue_name],
+        pos_blue_cw, vel_blue_cw = Tool.CW(self, r_sat=inf.pos[blue_name], v_sat=inf.vel[blue_name],
                                            r_ref=inf.pos["main_sat"], v_ref=inf.vel["main_sat"],
                                            t=step * self.args.step_time)
         return np.linalg.norm(pos_red_cw - pos_blue_cw)

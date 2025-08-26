@@ -13,9 +13,9 @@ from evaluate import evalute
 
 def run():
 
-    LOAD = False
-    LOAD_RUN_TIME = 1
-    LOAD_EP = 5
+    LOAD = True
+    LOAD_RUN_TIME = 2
+    LOAD_EP = 15000
 
     args = parameter.get_args()
     env, dim_info_red, dim_info_blue = get_reset_env(evaluate=False, args=args)
@@ -49,12 +49,12 @@ def run():
     traj_length = 0
     total_steps = 0
     evalute_episode = 100
-
     while total_steps < args.max_step:
         red_obs, global_obs_red, blue_obs, global_obs_blue = env.reset()
         terminal = False
         this_ep_reward_sum_blue = {agent_id: 0 for agent_id in env.blue_sat}
         start_time = time.time()
+
         while not terminal:
             total_steps += 1
             action_red, prob_red = mappo_red.choose_action(red_obs)

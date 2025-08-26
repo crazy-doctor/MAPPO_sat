@@ -62,7 +62,7 @@ class sc_info(Tool):
                 self.pos_cw[sat_id], self.vel_cw[sat_id] = Tool.Inertial_to_CW(self, blue_ref_pos, blue_ref_vel,
                                                                        self.pos[sat_id], self.vel[sat_id])
             elif sat_id[0] == "b":
-                dis = 5*int(sat_id[1])
+                dis = 3*int(sat_id[1])
                 theta = 2 * math.asin(dis / (42157 * 2)) * 180 / math.pi
                 ele_tmp = ref_sat_ele + single * np.array([0, 0, 0, 0, theta, 0])
                 self.orbital_ele[sat_id] = ele_tmp
