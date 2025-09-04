@@ -5,8 +5,8 @@ from abc import ABC, abstractclassmethod
 # 自建包
 from Tool.astro_tool import Tool
 ## 观测、奖励、结束方案
-from Env.done_judge import done_judge # 环境中卫星的任务完成、死亡情况
-from Env import reward
+from MAPPO.env import reward
+
 
 # 有don_judge
 class info_generate(ABC):
@@ -45,9 +45,6 @@ class scenario(Tool):
         self.satellite = self.red_sat + self.blue_sat + self.ref_sat
         self.mode = "evalute" if evalute==True else "train"
 
-        self.done_judge = done_judge(red_sat=self.red_sat,
-                                     blue_sat=self.blue_sat, args=args)
-
         ## 引擎接口
         if args.fast_calculate:
             from Env.interface_sim import Self_Sim
@@ -67,7 +64,7 @@ class scenario(Tool):
         # 记录训练状态
         self.episode_num = 0
         self.step_num = 0
-        self.rod = reward.reward_obs_done(args=self.args,red_sat=self.red_sat,blue_sat=self.blue_sat)
+        self.rod = reward.reward_obs_done(args=self.args, red_sat=self.red_sat, blue_sat=self.blue_sat)
         ## 分配方案
         # from task_assign import TaskAssign as task_assign
         # self.task_assign = task_assign(args=args, red_sat=self.red_sat, blue_sat=self.blue_sat,

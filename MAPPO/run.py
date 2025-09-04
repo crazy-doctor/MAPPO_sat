@@ -3,10 +3,9 @@ from mappo import MAPPO
 import os
 from torch.utils.tensorboard import SummaryWriter
 import time
-import torch
 
-from Tool.init import get_reset_env
-from Env import parameter
+from MAPPO.env.init import get_reset_env
+from MAPPO.env import parameter
 from Tool import File_Path
 from evaluate import evalute
 
